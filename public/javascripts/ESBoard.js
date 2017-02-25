@@ -17,7 +17,9 @@ var ESBoard = (function () {
         this.styleChooser = styles;
         $(this.canvas).on("click", function (e) {
             if (e.ctrlKey) {
-                _this.bus.postNoteCreated(ESBoard.uuid(), _this.styleChooser.getSelectedStyle(), e.pageX, e.pageY);
+                var x = e.offsetX;
+                var y = e.offsetY;
+                _this.bus.postNoteCreated(ESBoard.uuid(), _this.styleChooser.getSelectedStyle(), x, y);
             }
         });
         this.eventBus.registerListener(this);
