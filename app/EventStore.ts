@@ -2,7 +2,7 @@
  * Created by tom on 18.02.17.
  */
 import {EventStream, uuid} from "./EventSteam";
-
+import * as fs from 'fs';
 
 
 export class ESStream {
@@ -13,13 +13,30 @@ export class ESStream {
 export class EventStore {
     private streams : {[id : string] : EventStream} = {};
 
-    constructor() {}
+    constructor() {
+        if (fs.existsSync('data/stores')) {
+            console.log("data/stores");
+            const streams = JSON.parse(fs.readFileSync('data/stores', 'utf8'))
+            streams.forEach(entry => {
+                console.log("entry:", entry)
+                this.streams[entry.key] = EventStream.load(entry.key, entry.name);
+            });
+        }
+    }
 
 
+    private persist() {
+        const streams  = []
+        for (var key in this.streams) {
+            streams.push({key : key, name: this.streams[key].name});
+        }
+        fs.writeFileSync('data/stores', JSON.stringify(streams), 'utf8');
+    }
 
     createStream(name : string) : string {
         const id = uuid();
         this.streams[id] = new EventStream(name, id);
+        this.persist();
         return id;
     }
 

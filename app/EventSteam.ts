@@ -2,6 +2,8 @@
  * Created by tom on 16.02.17.
  */
 
+import * as fs from 'fs';
+
 export function uuid() {
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
         var r = Math.random()*16|0, v = c == 'x' ? r : (r&0x3|0x8);
@@ -23,10 +25,20 @@ export class EventStream {
     private events : ESEvent[] = []
     private subscribers : {[id : string] : Subscriber} = {}
 
-    constructor(public name : string, public uuid : string) {}
+    constructor(public name : string, public uuid : string, aEvents ?: ESEvent[]) {
+        if (aEvents) {
+            this.events = aEvents;
+        }
+    }
 
     private nextVersion() : number {
         return this.events.length > 0 ? this.events[this.events.length - 1].version + 1 : 1;
+    }
+
+    private append(event : ESEvent) {
+        this.events.push(event);
+        const data = JSON.stringify(event);
+        fs.appendFileSync('data/store-'+this.uuid, data + ",", 'utf8');
     }
 
     private upToDateSubscriber(subscriber : Subscriber) {
@@ -39,7 +51,7 @@ export class EventStream {
         // TODO: how do we handle collisions?
         console.log("appendEvent", type, aggId, version, "\n");
         const esEvent = new ESEvent(type, this.nextVersion(), aggId, data);
-        this.events.push(esEvent);
+        this.append(esEvent);
         for (var key in this.subscribers) {
             const subscriber = this.subscribers[key];
             if (subscriber.filter(esEvent)) subscriber.callback(esEvent);
@@ -81,6 +93,14 @@ export class EventStream {
         return subscriberId;
     }
 
+    static load(uuid : string, name : string) {
+        console.log("EventStream.load", uuid);
+        let data = "[" + fs.readFileSync('data/store-'+uuid, 'utf8');
+        data = data.substr(0, data.length-1) + "]";
+        console.log(data);
+        const events = JSON.parse(data);
+        return new EventStream(name,  uuid, events);
+    }
 }
 
 export default EventStream;
