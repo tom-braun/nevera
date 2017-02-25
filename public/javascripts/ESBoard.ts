@@ -28,9 +28,11 @@ class ESBoard implements NoteEventListener {
         this.eventBus = bus
         this.styleChooser = styles;
 
-        $(this.canvas).on("click", (e : JQueryKeyEventObject) => {
+        $(this.canvas).on("click", (e : JQueryMouseEventObject) => {
                 if (e.ctrlKey) {
-                    this.bus.postNoteCreated(ESBoard.uuid(), this.styleChooser.getSelectedStyle(), e.pageX,  e.pageY);
+                    const x = e.offsetX;
+                    const y = e.offsetY;
+                    this.bus.postNoteCreated(ESBoard.uuid(), this.styleChooser.getSelectedStyle(), x,  y);
                 }
             }
         );
