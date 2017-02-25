@@ -7,6 +7,7 @@ class EventType {
     static noteCreated = "noteCreated";
     static noteMoved = "noteMoved";
     static noteLabelChanged = "noteLabelChanged";
+    static noteDeleted = "noteDeleted";
 }
 interface NoteEvent {
     type;
@@ -25,6 +26,11 @@ class NoteLabelChangedEvent implements NoteEvent {
 class NoteMovedEvent implements NoteEvent {
     readonly type = EventType.noteMoved;
     constructor(public aggId: string, public x : number, public y : number) {}
+}
+
+class NoteDeletedEvent implements NoteEvent {
+    readonly type = EventType.noteDeleted;
+    constructor(public aggId: string) {}
 }
 
 interface NoteEventListener {
@@ -72,10 +78,14 @@ class EventBus {
     }
 
 
+    public postNoteDeleted(aggId: string) {
+        let event = new NoteDeletedEvent(aggId);
+        this.postEvent(aggId, event, 0);
+    }
+
     registerListener(aListener : NoteEventListener) {
         this.listeners.push(aListener);
     }
-
     private postEvent(aggId: string, event : NoteEvent, version : number) {
         console.log("EventBus postEvent", event);
         this.socket.send(
@@ -88,6 +98,7 @@ class EventBus {
             })
         );
     }
+
     private notifyListeners(type : string, aggId : string, version : number, event: NoteEvent) {
         this.listeners.forEach( (listener) => {
             listener.onEvent(type, aggId, version, event)

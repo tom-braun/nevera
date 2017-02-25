@@ -65,7 +65,13 @@ class ESBoard implements NoteEventListener {
             if (version > this.noteVersions[aggId]) {
                 const note = this.findNote(aggId);
                 const labelChangedEvent = event as NoteLabelChangedEvent;
-                note.text(labelChangedEvent.newLabel);
+                note.children('.noteText').text(labelChangedEvent.newLabel);
+                this.noteVersions[aggId] = version;
+            }
+        } else if (type === EventType.noteDeleted) {
+            if (version > this.noteVersions[aggId]) {
+                const note = this.findNote(aggId);
+                note.remove();
                 this.noteVersions[aggId] = version;
             }
         }
@@ -75,6 +81,8 @@ class ESBoard implements NoteEventListener {
         console.log("onNoteCreated", event);
         console.log("onNoteCreated");
         const note = $(`<div id='${event.aggId}' class='${ event.noteType } draggable' version='${version}'></div>`);
+        const delButton = $(`<span class="delete-button">x</span>`);
+        const noteText = $(`<div class='noteText'/>`)
 
         note.draggable({
             containment: this.canvas, scroll: true,
@@ -94,27 +102,44 @@ class ESBoard implements NoteEventListener {
         });
 
         note.css({left: event.x, top: event.y, position: 'absolute'});
-        note.attr("contenteditable", "true");
+
+        noteText.on('click', event => {
+            console.log("noteText.click");
+            noteText.attr('contenteditable', "true");
+            noteText.focus();
+        });
+
+        noteText.on('dblclick', event => {
+            noteText.attr('contenteditable', "true");
+            noteText.select();
+            noteText.focus();
+        });
 
         let oldText = "";
-        note.on("focus",
+        noteText.on("focus",
             (e) => {
                 oldText = note.text();
                 console.log("focus: ", oldText);
             }
         );
-        note.on("blur",
+        noteText.on("blur",
             (e) => {
                 console.log("blur: ", oldText);
-                var newText = note.text()
+                var newText = noteText.text()
                 if (newText != oldText) {
-                    console.log("text changed: " + oldText + " -> " + $(this).text());
-                    note.text(oldText);
+                    noteText.text(oldText);
                     this.bus.postNoteLabelChanged(event.aggId, newText)
                 }
             }
         );
 
+        delButton.click(e => {
+            this.bus.postNoteDeleted(event.aggId);
+            console.log("DELETE");
+        });
+
+        note.append(delButton);
+        note.append(noteText);
         $(this.canvas).append(note);
         note.focus();
     }
