@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+
+<script>
+    var ws = new WebSocket('ws://localhost:8081/1234');
+    ws.onopen = function (event) {
+        console.log("open");
+        ws.send(JSON.stringify({action : 'create'}));
+    };
+    ws.onmessage = function (event) {
+        console.log("1>", event.data);
+        const boardId = JSON.parse(event.data).streamId;
+
+        ws.send(JSON.stringify({ action : 'subscribeForAll' }));
+        ws.send(JSON.stringify({
+            action : 'appendEvent',
+            type : 'DummyType',
+            aggId : 'agg-0',
+            data : 'bla',
+            version : '0'
+        }))
+        ws.send(JSON.stringify({
+            action : 'appendEvent',
+            type : 'DummyType',
+            aggId : 'agg-0',
+            data : 'blubber',
+            version : '1'
+        }))
+
+        ws.onmessage = function (event) {
+            console.log("2", event.data);
+        };
+    };
+
+
+</script>
+
+</body>
+</html>

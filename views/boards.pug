@@ -1,0 +1,26 @@
+html
+    head
+        link(rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css")
+        link(rel="stylesheet" href="stylesheets/style.css")
+        script(src="https://code.jquery.com/jquery-1.12.4.js")
+        script(src="https://code.jquery.com/ui/1.12.1/jquery-ui.js")
+        script(src="javascripts/ESBoard.js")
+        script(src="javascripts/EventBus.js")
+
+
+    body
+        h1 boards
+        table
+            each board in boards
+                tr
+                    td
+                        a(href='/boards/' + board.uuid) #{board.name}
+                    td  #{board.uuid}
+            else
+                span no boards yet
+
+
+        form(method='post', action="/boards")
+            span
+                input(type="text", name="name")
+                button Create new Board

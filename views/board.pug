@@ -1,0 +1,44 @@
+html
+    head
+        link(rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css")
+        link(rel="stylesheet" href="//jscrollpane.kelvinluck.com/style/jquery.jscrollpane.css")
+
+
+        link(rel="stylesheet" href="/stylesheets/style.css")
+        script(src="https://code.jquery.com/jquery-1.12.4.js")
+        script(src="https://code.jquery.com/ui/1.12.1/jquery-ui.js")
+        script(src="//jscrollpane.kelvinluck.com/script/jquery.mousewheel.js")
+        script(src="//jscrollpane.kelvinluck.com/script/jquery.jscrollpane.min.js")
+        script(src="/javascripts/ESBoard.js")
+        script(src="/javascripts/EventBus.js")
+        script(src="/javascripts/StyleChooser.js")
+
+
+
+
+    body
+        h1 #{name}
+        div#styles()
+            span#event Event
+            span#command Command
+            span#role Role
+            span#aggregate Aggregate
+            span#readmodel Read Model
+            span#policy Policy
+            span#system External System
+            span#issue Issue
+        div(class='scroll-pane horizontal-only')
+            div#canvas()
+        script().
+            console.log("youuu")
+            console.log("boardId:" + "#{boardId}")
+            console.log("hostname:" + "#{hostname}")
+            const styleChooser = new StyleChooser("#styles")
+            const eventBus = new EventBus("ws://" + "#{hostname}:8081" + "/" + "#{boardId}");
+            new ESBoard("#canvas", eventBus, styleChooser);
+
+
+        script().
+            $(function () {
+                $('.scroll-pane').jScrollPane({showArrows: true});
+            });

@@ -1,0 +1,7 @@
+app/*.js
+app/*.js.map
+node_modules
+public/javascript/*.js
+public/javascript/*.js.map
+routes/*.js.map
+routes/*.js
