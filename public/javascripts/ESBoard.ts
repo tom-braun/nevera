@@ -6,26 +6,26 @@
  * Created by tom on 11.02.17.
  */
 
-interface Note {
-    version : number;
+function findNote(aggId : string) {
+    return $(`#${aggId}`);
 }
 
 class ESBoard implements NoteEventListener {
-    readonly canvas: string
+    readonly canvas: string;
     readonly eventBus : EventBus
     readonly styleChooser : StyleChooser;
     noteVersions : { [id : string] : number} = {};
 
     static uuid() {
         return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-            var r = Math.random()*16|0, v = c == 'x' ? r : (r&0x3|0x8);
+            const r = Math.random()*16|0, v = c == 'x' ? r : (r&0x3|0x8);
             return v.toString(16);
         });
     }
 
     constructor(public canvasId : string, private bus: EventBus, private styles : StyleChooser) {
-        this.canvas = canvasId
-        this.eventBus = bus
+        this.canvas = canvasId;
+        this.eventBus = bus;
         this.styleChooser = styles;
 
         $(this.canvas).on("click", (e : JQueryMouseEventObject) => {
@@ -39,22 +39,20 @@ class ESBoard implements NoteEventListener {
 
 
 
-        this.eventBus.registerListener(this)
+        this.eventBus.registerListener(this);
         console.log("ESBoard created")
     }
 
-    private findNote(aggId : string) {
-        return $(`#${aggId}`);
-    }
+
 
     public onEvent(type : string, aggId : string, version : number, event: NoteEvent) {
         console.log("ESBoard.onEvent:", event);
         if (type === EventType.noteCreated) {
             console.log("onEvent: noteCreated");
-            this.onNoteCreated(event as NoteCreatedEvent, version);
+            this.onNoteCreated(event as NoteCreatedEvent);
             this.noteVersions[aggId] = version;
         } else if (type === EventType.noteMoved) {
-            const note = this.findNote(aggId);
+            const note = findNote(aggId);
             const movedEvent = event as NoteMovedEvent;
             if (version > this.noteVersions[aggId]) {
                 this.noteVersions[aggId] = version;
@@ -63,39 +61,39 @@ class ESBoard implements NoteEventListener {
             }
         } else if (type === EventType.noteLabelChanged) {
             if (version > this.noteVersions[aggId]) {
-                const note = this.findNote(aggId);
+                const note = findNote(aggId);
                 const labelChangedEvent = event as NoteLabelChangedEvent;
                 note.children('.noteText').text(labelChangedEvent.newLabel);
                 this.noteVersions[aggId] = version;
             }
         } else if (type === EventType.noteDeleted) {
             if (version > this.noteVersions[aggId]) {
-                const note = this.findNote(aggId);
+                const note = findNote(aggId);
                 note.remove();
                 this.noteVersions[aggId] = version;
             }
         }
     }
 
-    protected onNoteCreated(event: NoteCreatedEvent, version : number) {
+    protected onNoteCreated(event: NoteCreatedEvent) {
         console.log("onNoteCreated", event);
         console.log("onNoteCreated");
-        const note = $(`<div id='${event.aggId}' class='${ event.noteType } draggable' version='${version}'></div>`);
+        const note = $(`<div id='${event.aggId}' class='${ event.noteType } draggable'></div>`);
         const delButton = $(`<span class="delete-button">x</span>`);
-        const noteText = $(`<div class='noteText'/>`)
+        const noteText = $(`<div class='noteText'/>`);
 
         note.draggable({
             containment: this.canvas, scroll: true,
             start: () => {
-                const pos = note.position()
+                const pos = note.position();
                 console.log("started dragging: " + pos.left + ", " + pos.top);
             },
             drag: () => {
-                const pos = note.position()
+                // const pos = note.position();
                 //console.log("dragging: " + pos.left + ", " + pos.top);
             },
             stop: () => {
-                const pos = note.position()
+                const pos = note.position();
                 console.log("stopped dragging: " + pos.left + ", " + pos.top);
                 this.bus.postNoteMoved(event.aggId, pos.left, pos.top)
             }
@@ -103,29 +101,22 @@ class ESBoard implements NoteEventListener {
 
         note.css({left: event.x, top: event.y, position: 'absolute'});
 
-        noteText.on('click', event => {
-            console.log("noteText.click");
+        noteText.on('click', () => {
             noteText.attr('contenteditable', "true");
-            noteText.focus();
-        });
-
-        noteText.on('dblclick', event => {
-            noteText.attr('contenteditable', "true");
-            noteText.select();
             noteText.focus();
         });
 
         let oldText = "";
         noteText.on("focus",
-            (e) => {
+            () => {
                 oldText = note.text();
                 console.log("focus: ", oldText);
             }
         );
         noteText.on("blur",
-            (e) => {
+            () => {
                 console.log("blur: ", oldText);
-                var newText = noteText.text()
+                let newText = noteText.text();
                 if (newText != oldText) {
                     noteText.text(oldText);
                     this.bus.postNoteLabelChanged(event.aggId, newText)

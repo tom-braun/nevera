@@ -11,4 +11,4 @@ describe("EventStore", () => {
         const eventStore = new EventStore();
         expect(eventStore.createStream("some name").length).to.above(3);
     });
-}
+});

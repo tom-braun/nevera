@@ -34,7 +34,7 @@ html
             console.log("boardId:" + "#{boardId}")
             console.log("hostname:" + "#{hostname}")
             const styleChooser = new StyleChooser("#styles")
-            const eventBus = new EventBus("ws://" + "#{hostname}:8081" + "/" + "#{boardId}");
+            const eventBus = new EventBus("ws://" + "#{hostname}:#{port}" + "/" + "#{boardId}");
             new ESBoard("#canvas", eventBus, styleChooser);
 
 

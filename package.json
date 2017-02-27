@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "start": "node ./bin/www",
-    "test": "mocha -r ts-node/register model/**/*Test.ts"
+    "test": "mocha -r ts-node/register app/**/*Test.ts"
   },
   "dependencies": {
     "body-parser": "~1.16.0",
@@ -17,9 +17,10 @@
     "serve-favicon": "~2.3.2",
     "uuid": "^3.0.1",
     "mocha": "^3.2.0",
-    "chai": "^3.5.0"
+    "errorhandler": "^1.5.0"
   },
   "devDependencies": {
+    "chai": "^3.5.0",
     "@types/mocha": "^2.2.39",
     "@types/chai": "^3.4.34",
     "@types/node": "7.0.5",
@@ -27,6 +28,7 @@
     "@types/jqueryui": "~1.11.32",
     "@types/ws": "~0.0.38",
     "@types/uuid": "^3.3.0",
-    "@types/express" : "^4.0.35"
+    "@types/express" : "^4.0.35",
+    "@types/es6-promise" : "^0.0.32"
   }
 }

@@ -17,7 +17,7 @@ a {
 .delete-button {
     vertical-align: top;
     text-align: right;
-    top: 0px;
+    top: 0;
     right: 2px;
     position: absolute;
 }

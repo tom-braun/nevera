@@ -4,7 +4,7 @@
  * Module dependencies.
  */
 
-var app = require('../app');
+var app = require('../app/BoardServer');
 var debug = require('debug')('untitled:server');
 var http = require('http');
 
@@ -12,14 +12,14 @@ var http = require('http');
  * Get port from environment and store in Express.
  */
 
-var port = normalizePort(process.env.PORT || '3000');
-app.set('port', port);
+const port = normalizePort(process.env.PORT || '3000');
+const host = process.env.HOST || 'localhost';
 
 /**
  * Create HTTP server.
  */
 
-var server = http.createServer(app);
+var server = new app.BoardServer(host, port).server;
 
 /**
  * Listen on provided port, on all network interfaces.

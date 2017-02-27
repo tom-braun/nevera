@@ -1,17 +1,17 @@
 import {Router, Request, Response, NextFunction} from  'express';
-import {EventStore} from '../app/EventStore'
+import {EventStore} from '../EventStore'
 
 
 export class BoardRouter {
-    readonly router: Router;
+    public router: Router;
 
-    constructor(eventStore: EventStore) {
+    constructor(eventStore: EventStore, port : number) {
         if (eventStore === undefined) throw "undefined";
         this.router = Router();
-        this.init(eventStore);
+        this.init(eventStore, port);
     }
 
-    init(eventStore: EventStore) {
+    init(eventStore: EventStore, port : number) {
         /* GET home page. */
         this.router.get('/', function (req: Request, res: Response, next: NextFunction) {
             res.redirect("/boards");
@@ -28,7 +28,12 @@ export class BoardRouter {
             if (board === undefined) {
                 res.redirect('/boards')
             } else {
-                res.render('board', {boardId: req.params.boardId, hostname: req.hostname, name : board.name});
+                res.render('board', {
+                    boardId: req.params.boardId,
+                    hostname: req.hostname,
+                    name : board.name,
+                    port : port
+                });
             }
         });
 
