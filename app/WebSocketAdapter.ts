@@ -6,10 +6,11 @@
 import { Server } from 'ws';
 import { parse, Url } from 'url';
 import {EventStore} from "./EventStore";
-import {ESEvent} from "./EventStoreDefs";
+import {ESEvent, uuid} from "./EventStoreDefs";
 
 
 class ESCommand {
+    public sessionId : string;
     public action : string;
     public type : string;
     public aggId : string;
@@ -22,7 +23,7 @@ export class WebSocketAdapter {
     constructor(server : Server, eventStore : EventStore) {
         server.on('connection', ws => {
             let subscriberIds : string[] = [];
-
+            const sessionId = uuid();
             console.log("new connection socket:", ws.upgradeReq.url);
             const url = parse(ws.upgradeReq.url, true);
             const stream = this.getStream(eventStore, url);
@@ -45,7 +46,7 @@ export class WebSocketAdapter {
 
                     const stream = this.getStream(eventStore, url);
                     if (command.action === 'appendEvent') {
-                        const version = stream.appendEvent(command.type, command.aggId, command.data, command.version);
+                        const version = stream.appendEvent(command.sessionId, command.type, command.aggId, command.data, command.version);
                     } else if (command.action === 'subscribeForAggregate'){
                         subscriberIds.push(stream.subscribeForAggregate(event => {
                             ws.send(JSON.stringify(event))
@@ -62,6 +63,8 @@ export class WebSocketAdapter {
                     }
                 }
             });
+
+            ws.send(JSON.stringify({type: '_sessionInfo', sessionId: sessionId}));
         });
     }
 

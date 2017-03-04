@@ -21,13 +21,13 @@ export class EventStream {
         if (aEvents) {
             this.events = aEvents;
         } else {
-            this.append(new ESEvent('::Store::Named', this.nextVersion(), null, {name : name}));
+            this.append(new ESEvent('', '::Store::Named', this.nextVersion(), null, {name : name}));
         }
     }
 
     public rename(newName : string) {
         this.name = newName;
-        this.append(new ESEvent('::Store::Named', this.nextVersion(), null, {name : newName}));
+        this.append(new ESEvent('', '::Store::Named', this.nextVersion(), null, {name : newName}));
     }
     private upToDateSubscriber(subscriber : Subscriber) {
         this.events
@@ -35,10 +35,10 @@ export class EventStream {
             .forEach(subscriber.callback);
     }
 
-    public appendEvent(type : string, aggId : string, data : Object, version = 0) : number {
+    public appendEvent(sessionId: string, type : string, aggId : string, data : Object, version = 0) : number {
         // TODO: how do we handle collisions?
-        debug("appendEvent", type, aggId, version, "\n");
-        const esEvent = new ESEvent(type, this.nextVersion(), aggId, data);
+        debug("appendEvent", sessionId, type, aggId, version, "\n");
+        const esEvent = new ESEvent(sessionId, type, this.nextVersion(), aggId, data);
         this.append(esEvent);
         for (var key in this.subscribers) {
             const subscriber = this.subscribers[key];

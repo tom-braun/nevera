@@ -53,10 +53,10 @@ class ESBoard implements NoteEventListener {
     }
 
 
-    public onEvent(type: string, aggId: string, version: number, event: NoteEvent) {
+    public onEvent(fromSelf: boolean, type: string, aggId: string, version: number, event: NoteEvent) {
         console.log("ESBoard.onEvent:", event);
         if (type === EventType.noteCreated) {
-            this.onNoteCreated(event as NoteCreatedEvent);
+            this.onNoteCreated(fromSelf, event as NoteCreatedEvent);
             this.noteVersions[aggId] = version;
         } else if (type === EventType.noteMoved) {
             const note = findNote(aggId);
@@ -85,7 +85,7 @@ class ESBoard implements NoteEventListener {
         }
     }
 
-    protected onNoteCreated(event: NoteCreatedEvent) {
+    protected onNoteCreated(fromSelf: boolean, event: NoteCreatedEvent) {
         const note = $(`<div id='${event.aggId}' class='note ${ event.noteType } draggable'></div>`);
         const delButton = $(`<span class="delete-button">x</span>`);
         const noteText = $(`<div class='note-text'/>`);
@@ -144,9 +144,8 @@ class ESBoard implements NoteEventListener {
 
         noteText.attr('contenteditable', "true");
 
-        // FIXME: if we enable this, replay will cause posts occasionally
-        // also: node will take focus on other clients
-        // solution: we need to check whether the event originated from this session.
-        // noteText.focus();
+        if (fromSelf) {
+            noteText.focus();
+        }
     }
 }

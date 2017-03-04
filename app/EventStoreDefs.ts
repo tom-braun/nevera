@@ -14,6 +14,6 @@ export function uuid() {
 }
 
 export class ESEvent {
-    constructor(public type : string, public version : number, public aggId : string, public data : Object) {
+    constructor(public sessionId: string, public type : string, public version : number, public aggId : string, public data : Object) {
     }
 }
