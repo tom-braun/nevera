@@ -9,13 +9,16 @@ html
 
 
     body
-        h1 boards
-        table
+        div(style="margin-bottom: 10px;")
+            span(style="font-family: sans-serif; font-size: 24pt; font-style: bold;") Nevera
+            span(style="margin-left: 1em") virtual event-storming
+
+        table(style="margin-bottom: 20px")
             each board in boards
                 tr
                     td
-                        a(href='/boards/' + board.uuid) #{board.name}
-                    td  #{board.uuid}
+                        a(href='/boards/' + board.id) #{board.name}
+                    td  #{board.id}
             else
                 span no boards yet
 
@@ -23,4 +26,4 @@ html
         form(method='post', action="/boards")
             span
                 input(type="text", name="name")
-                button Create new Board
+                button Create Board

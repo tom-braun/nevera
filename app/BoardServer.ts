@@ -8,6 +8,7 @@ import {BoardRouter} from "./routes/BoardRouter";
 import {EventStore} from "./EventStore";
 import {WebSocketAdapter} from "./WebSocketAdapter";
 import * as WebSocket from 'ws';
+import {StreamFSRepo} from "./StreamRepo";
 
 
 
@@ -16,7 +17,8 @@ const logger = require('morgan');
 
 
 class Context {
-    readonly eventStore = new EventStore();
+    readonly persistence = new StreamFSRepo("data");
+    readonly eventStore = new EventStore(this.persistence);
     readonly webSocketAdapter: WebSocketAdapter;
     readonly boardRouter : BoardRouter;
 
@@ -36,7 +38,7 @@ export class BoardServer {
         const app = express();
         app.set('port', port);
         app.set('hostname', host);
-        logger.log(`BoardServer ${host}:${port}`);
+        console.log(`BoardServer ${host}:${port}`);
         this.server = http.createServer(app);
         const context = new Context(this.server, port);
         BoardServer.initMiddleware(app);

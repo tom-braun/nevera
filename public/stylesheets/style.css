@@ -1,6 +1,8 @@
 body {
-    padding: 50px;
+    padding: 10px;
     font: 12px "Lucida Grande", Helvetica, Arial, sans-serif;
+    color: white;
+    background: #444444;
 }
 
 a {
@@ -10,114 +12,29 @@ a {
 
 #canvas {
     width: 6000px;
-    height: 700px;
-    background-color: #dddddd;
-}
-
-.delete-button {
-    vertical-align: top;
-    text-align: right;
-    top: 0;
-    right: 2px;
-    position: absolute;
-}
-
-.scroll-pane
-{
-    width: 100%;
-    overflow: auto;
-}
-
-.horizontal-only
-{
-    height: auto;
-    max-height: 700px;
+    height: 1200px;
+    background-color: #fffbfc;
+    color: black;
 }
 
 
-.noteText {
-    display: inline-block;
-    height: 80%;
-    vertical-align: middle;
-    line-height: normal;
-    padding: 5px;
+#styles {
+    margin-bottom: 14px;
+    color: black;
+    font-family: Helvetica, Arial, sans-serif;
+    font-weight: bold;
 }
-
-.event {
-    background-color: #ffaa1f;
-    text-align: center;
-    padding-top: 8px;
-    /*line-height: 80px;*/
-    width: 80px;
-    height: 80px;
-}
-
-.command {
-    background-color: #5e9fff;
-    text-align: center;
-    padding-top: 8px;
-    width: 80px;
-    height: 80px;
-}
-
-.role {
-    background-color: #fff86a;
-    text-align: center;
-    padding-top: 8px;
-    width: 40px;
-    height: 70px;
-}
-
-.aggregate {
-    background-color: #ffefaf;
-    text-align: center;
-    padding-top: 8px;
-    width: 120px;
-    height: 80px;
-}
-
-.readmodel {
-    background-color: #9fff75;
-    text-align: center;
-    padding-top: 8px;
-    width: 120px;
-    height: 80px;
-}
-
-.policy {
-    background-color: #e9dfff;
-    text-align: center;
-    padding-top: 8px;
-    width: 80px;
-    height: 80px;
-}
-
-.system {
-    background-color: #ffc6e0;
-    text-align: center;
-    padding-top: 8px;
-    width: 120px;
-    height: 80px;
-}
-
-.issue {
-    background-color: #fe71c6;
-    text-align: center;
-    padding-top: 8px;
-    width: 60px;
-    height: 60px;
-}
-
-/* */
 
 #styles span {
-    height: 20px;
-    padding: 1em;
+    padding: 8px;
+}
+
+.selected-style {
+    border-bottom: 6px solid lightgreen;
 }
 
 #event {
     background-color: #ffaa1f;
-
 }
 
 #command {
@@ -148,4 +65,134 @@ a {
     background-color: #fe71c6;
 }
 
+#remark {
+    background-color: #ffffff;
+}
+
+.delete-button {
+    vertical-align: top;
+    text-align: right;
+    top: 0;
+    right: 2px;
+    position: absolute;
+}
+
+.scroll-pane
+{
+    width: 100%;
+    overflow: auto;
+}
+
+.horizontal-only
+{
+    height: auto;
+    width: auto;
+    max-height: 90%;
+}
+
+
+.noteText {
+    display: inline-block;
+    height: 80%;
+    vertical-align: middle;
+    line-height: normal;
+    padding: 5px;
+}
+
+
+.note {
+    text-align: center;
+    box-shadow: 2px 2px 10px #bbbbbb;
+    font-family: "Coming Soon", sans-serif;
+    font-weight: bold;
+    font-size: 10pt;
+}
+.note-text {
+    margin-top: 8px;
+}
+
+
+.moving {
+    box-shadow: 4px 4px 8px  #bbbbbb;
+}
+
+.event {
+    background-color: #ffaa1f;
+    width: 80px;
+    height: 80px;
+    z-index: 2;
+}
+
+.command {
+    background-color: #5e9fff;
+    width: 80px;
+    height: 80px;
+    z-index: 3;
+}
+
+.role {
+    background-color: #fff86a;
+    width: 50px;
+    height: 70px;
+    z-index: 6;
+    font-size: 8pt;
+}
+
+.aggregate {
+    background-color: #ffefaf;
+    width: 120px;
+    height: 80px;
+    z-index: 1;
+    font-size: 12pt;
+}
+
+.readmodel {
+    background-color: #9fff75;
+    width: 120px;
+    height: 80px;
+    z-index: 5;
+}
+
+.policy {
+    background-color: #e9dfff;
+    width: 80px;
+    height: 80px;
+    z-index: 4;
+}
+
+.system {
+    background-color: #ffc6e0;
+    width: 120px;
+    height: 80px;
+    z-index: 1;
+    font-size: 12pt;
+}
+
+.issue {
+    background-color: #fe71c6;
+    width: 60px;
+    height: 60px;
+    z-index: 10;
+}
+
+.remark {
+    background-color: #ffffff;
+    width: 160px;
+    height: 120px;
+    z-index: 9;
+    font-size: 8pt;
+}
+
+.no-close .ui-dialog-titlebar-close {
+    display: none;
+}
+
+.ui-dialog {
+    box-shadow: 0 0 30px grey;
+}
+
+.ui-dialog-content {
+    text-align: center;
+}
+/* */
 

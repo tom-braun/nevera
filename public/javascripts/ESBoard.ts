@@ -6,49 +6,56 @@
  * Created by tom on 11.02.17.
  */
 
-function findNote(aggId : string) {
+function findNote(aggId: string) {
     return $(`#${aggId}`);
 }
 
 class ESBoard implements NoteEventListener {
     readonly canvas: string;
-    readonly eventBus : EventBus
-    readonly styleChooser : StyleChooser;
-    noteVersions : { [id : string] : number} = {};
+    readonly eventBus: EventBus
+    readonly styleChooser: StyleChooser;
+    noteVersions: {[id: string]: number} = {};
 
     static uuid() {
-        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-            const r = Math.random()*16|0, v = c == 'x' ? r : (r&0x3|0x8);
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+            const r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
             return v.toString(16);
         });
     }
 
-    constructor(public canvasId : string, private bus: EventBus, private styles : StyleChooser) {
+    constructor(public canvasId: string, private bus: EventBus, private styles: StyleChooser) {
         this.canvas = canvasId;
         this.eventBus = bus;
         this.styleChooser = styles;
 
-        $(this.canvas).on("click", (e : JQueryMouseEventObject) => {
+        $(this.canvas).on("click", (e: JQueryMouseEventObject) => {
                 if (e.ctrlKey) {
                     const x = e.offsetX;
                     const y = e.offsetY;
-                    this.bus.postNoteCreated(ESBoard.uuid(), this.styleChooser.getSelectedStyle(), x,  y);
+                    this.bus.postNoteCreated(ESBoard.uuid(), this.styleChooser.getSelectedStyle(), x, y);
                 }
             }
         );
 
+        this.setupNameEditing($("#boardName"));
 
 
         this.eventBus.registerListener(this);
-        console.log("ESBoard created")
+    }
+
+    private setupNameEditing($boardName: JQuery) {
+        $boardName.blur(() => {
+            jQuery.ajax({
+                url: location.href + "/name/" + $boardName.text(),
+                type: "PUT"
+            });
+        });
     }
 
 
-
-    public onEvent(type : string, aggId : string, version : number, event: NoteEvent) {
+    public onEvent(type: string, aggId: string, version: number, event: NoteEvent) {
         console.log("ESBoard.onEvent:", event);
         if (type === EventType.noteCreated) {
-            console.log("onEvent: noteCreated");
             this.onNoteCreated(event as NoteCreatedEvent);
             this.noteVersions[aggId] = version;
         } else if (type === EventType.noteMoved) {
@@ -63,7 +70,10 @@ class ESBoard implements NoteEventListener {
             if (version > this.noteVersions[aggId]) {
                 const note = findNote(aggId);
                 const labelChangedEvent = event as NoteLabelChangedEvent;
-                note.children('.noteText').text(labelChangedEvent.newLabel);
+                const noteText = note.children('.note-text');
+                console.log("noteLabelChanged:", note.index(), labelChangedEvent.newLabel)
+                noteText.text(labelChangedEvent.newLabel);
+
                 this.noteVersions[aggId] = version;
             }
         } else if (type === EventType.noteDeleted) {
@@ -76,17 +86,15 @@ class ESBoard implements NoteEventListener {
     }
 
     protected onNoteCreated(event: NoteCreatedEvent) {
-        console.log("onNoteCreated", event);
-        console.log("onNoteCreated");
-        const note = $(`<div id='${event.aggId}' class='${ event.noteType } draggable'></div>`);
+        const note = $(`<div id='${event.aggId}' class='note ${ event.noteType } draggable'></div>`);
         const delButton = $(`<span class="delete-button">x</span>`);
-        const noteText = $(`<div class='noteText'/>`);
+        const noteText = $(`<div class='note-text'/>`);
 
         note.draggable({
             containment: this.canvas, scroll: true,
             start: () => {
                 const pos = note.position();
-                console.log("started dragging: " + pos.left + ", " + pos.top);
+                note.addClass("moving");
             },
             drag: () => {
                 // const pos = note.position();
@@ -94,7 +102,7 @@ class ESBoard implements NoteEventListener {
             },
             stop: () => {
                 const pos = note.position();
-                console.log("stopped dragging: " + pos.left + ", " + pos.top);
+                note.removeClass("moving");
                 this.bus.postNoteMoved(event.aggId, pos.left, pos.top)
             }
         });
@@ -106,7 +114,7 @@ class ESBoard implements NoteEventListener {
             noteText.focus();
         });
 
-        let oldText = "";
+        let oldText = undefined;
         noteText.on("focus",
             () => {
                 oldText = note.text();
@@ -117,8 +125,9 @@ class ESBoard implements NoteEventListener {
             () => {
                 console.log("blur: ", oldText);
                 let newText = noteText.text();
-                if (newText != oldText) {
+                if (oldText != undefined && newText != oldText) {
                     noteText.text(oldText);
+                    console.log("postNoteLabelChanged:", note.index(), newText);
                     this.bus.postNoteLabelChanged(event.aggId, newText)
                 }
             }
@@ -132,6 +141,12 @@ class ESBoard implements NoteEventListener {
         note.append(delButton);
         note.append(noteText);
         $(this.canvas).append(note);
-        note.focus();
+
+        noteText.attr('contenteditable', "true");
+
+        // FIXME: if we enable this, replay will cause posts occasionally
+        // also: node will take focus on other clients
+        // solution: we need to check whether the event originated from this session.
+        // noteText.focus();
     }
 }

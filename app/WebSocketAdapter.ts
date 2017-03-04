@@ -6,7 +6,7 @@
 import { Server } from 'ws';
 import { parse, Url } from 'url';
 import {EventStore} from "./EventStore";
-import {ESEvent} from "./EventSteam";
+import {ESEvent} from "./EventStoreDefs";
 
 
 class ESCommand {
@@ -46,7 +46,6 @@ export class WebSocketAdapter {
                     const stream = this.getStream(eventStore, url);
                     if (command.action === 'appendEvent') {
                         const version = stream.appendEvent(command.type, command.aggId, command.data, command.version);
-                        ws.send(JSON.stringify(new ESEvent('setVersion', version, command.aggId, {})));
                     } else if (command.action === 'subscribeForAggregate'){
                         subscriberIds.push(stream.subscribeForAggregate(event => {
                             ws.send(JSON.stringify(event))
@@ -67,7 +66,7 @@ export class WebSocketAdapter {
     }
 
     private getStream(eventStore: EventStore, url: Url) {
-        console.log("getStream: ", url);
+        console.log("getStream: ", url.path);
         const streamId : string = url.path.substring(1);
         console.log("getStream: ", streamId);
         return eventStore.getStream(streamId);

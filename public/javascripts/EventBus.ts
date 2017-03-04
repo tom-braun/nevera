@@ -86,6 +86,7 @@ class EventBus {
     registerListener(aListener : NoteEventListener) {
         this.listeners.push(aListener);
     }
+
     private postEvent(aggId: string, event : NoteEvent, version : number) {
         console.log("EventBus postEvent", event);
         this.socket.send(
@@ -98,10 +99,10 @@ class EventBus {
             })
         );
     }
-
     private notifyListeners(type : string, aggId : string, version : number, event: NoteEvent) {
         this.listeners.forEach( (listener) => {
             listener.onEvent(type, aggId, version, event)
         })
     }
+
 }

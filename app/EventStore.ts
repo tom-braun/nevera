@@ -1,58 +1,71 @@
 /**
  * Created by tom on 18.02.17.
  */
-import {EventStream, uuid} from "./EventSteam";
-import * as fs from 'fs';
+import {EventStream} from "./EventStream";
+
+import {StreamRepo} from "./StreamRepo";
+import {StreamInfo, uuid} from "./EventStoreDefs";
 
 
-export class ESStream {
-    constructor(public name : string,  public uuid : string) {
-    }
+interface StreamEntry extends StreamInfo {
+    stream: EventStream;
 }
 
 export class EventStore {
-    private streams : {[id : string] : EventStream} = {};
+    private streams: {[id: string]: StreamEntry} = {};
 
-    constructor() {
-        if (fs.existsSync('data/stores')) {
-            console.log("data/stores");
-            const streams = JSON.parse(fs.readFileSync('data/stores', 'utf8'))
-            streams.forEach(entry => {
-                console.log("entry:", entry)
-                this.streams[entry.key] = EventStream.load(entry.key, entry.name);
-            });
-        }
+
+    constructor(private streamRepo: StreamRepo) {
+        const streamsInfo = streamRepo.loadStreamsInfo();
+        streamsInfo.forEach(info => {
+            this.streams[info.id] = {id: info.id, name: info.name, stream: undefined};
+        });
     }
 
 
     private persist() {
-        const streams  = []
+        const streams = []
         for (var key in this.streams) {
-            streams.push({key : key, name: this.streams[key].name});
+            streams.push({id: key, name: this.streams[key].name});
         }
-        fs.writeFileSync('data/stores', JSON.stringify(streams), 'utf8');
+
+        this.streamRepo.storeStreamsInfo(streams);
     }
 
-    createStream(name : string) : string {
+    createStream(name: string): string {
         const id = uuid();
-        this.streams[id] = new EventStream(name, id);
+        this.streams[id] = {id: id, name: name, stream: new EventStream(this.streamRepo, name, id)};
         this.persist();
         return id;
     }
 
-    getStream(streamId : string) : EventStream {
-        return this.streams[streamId];
+    getStream(streamId: string): EventStream {
+        const streamInfo= this.streams[streamId];
+        if (!streamInfo.stream) {
+            streamInfo.stream = this.streamRepo.loadStream(streamId, streamInfo.name );
+        }
+        return streamInfo.stream;
     }
 
-    openStream(streamId : string) : EventStream {
-        return this.streams[streamId];
-    }
-
-    allStreams() : ESStream[] {
+    allStreams(): StreamInfo[] {
         return Object.keys(this.streams).map(key => {
             const stream = this.streams[key];
-            return new ESStream(stream.name, stream.uuid);
+            return {id: stream.id, name: stream.name};
         });
+    }
+
+    renameStream(streamId: string, newName: string) {
+        if (!newName || newName.length === 0) {
+            newName = "n/a";
+        }
+        const stream = this.getStream(streamId);
+        if (stream) {
+            this.streams[streamId].name = newName;
+            stream.rename(newName);
+            this.persist();
+        } else {
+            throw new Error("no such stream");
+        }
     }
 }
 

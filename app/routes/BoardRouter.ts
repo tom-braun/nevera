@@ -1,6 +1,7 @@
 import {Router, Request, Response, NextFunction} from  'express';
 import {EventStore} from '../EventStore'
 
+const debug = require('debug');
 
 export class BoardRouter {
     public router: Router;
@@ -22,7 +23,7 @@ export class BoardRouter {
         });
 
         this.router.get('/boards/:boardId', function (req: Request, res: Response, next: NextFunction) {
-            console.log("selected board:", req.params.boardId);
+            debug("selected board:", req.params.boardId);
 
             const board = eventStore.getStream(req.params.boardId);
             if (board === undefined) {
@@ -34,6 +35,16 @@ export class BoardRouter {
                     name : board.name,
                     port : port
                 });
+            }
+        });
+
+        this.router.put('/boards/:boardId/name/:newName', function (req: Request, res: Response, next: NextFunction) {
+            try {
+                console.log("put name ", req.params.newName);
+                eventStore.renameStream(req.params.boardId, req.params.newName);
+                res.status(204);
+            } catch (e) {
+                res.status(404)
             }
         });
 

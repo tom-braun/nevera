@@ -2,6 +2,7 @@ html
     head
         link(rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css")
         link(rel="stylesheet" href="//jscrollpane.kelvinluck.com/style/jquery.jscrollpane.css")
+        link(rel="stylesheet" href="https://fonts.googleapis.com/css?family=Coming+Soon")
 
 
         link(rel="stylesheet" href="/stylesheets/style.css")
@@ -17,8 +18,9 @@ html
 
 
     body
-        h1 #{name}
-        div#styles()
+        h1#boardName(contenteditable='true') #{name}
+        a(style="float: right" href="/boards") back
+        section#styles
             span#event Event
             span#command Command
             span#role Role
@@ -27,18 +29,28 @@ html
             span#policy Policy
             span#system External System
             span#issue Issue
+            span#remark Remark
+
+
         div(class='scroll-pane horizontal-only')
             div#canvas()
         script().
-            console.log("youuu")
-            console.log("boardId:" + "#{boardId}")
-            console.log("hostname:" + "#{hostname}")
             const styleChooser = new StyleChooser("#styles")
-            const eventBus = new EventBus("ws://" + "#{hostname}:#{port}" + "/" + "#{boardId}");
+            const eventBus = new EventBus("ws://" + location.host + "/" + "#{boardId}");
             new ESBoard("#canvas", eventBus, styleChooser);
 
 
         script().
             $(function () {
                 $('.scroll-pane').jScrollPane({showArrows: true});
+                $("#welcome").dialog({
+                    dialogClass: "no-close",
+                    title: "Notice"
+                }).click(function() {
+                    $(this).dialog("close");
+                });
             });
+
+        div#welcome(style="display:none;")
+            p.
+                Use Ctrl-Click to place sticky-notes.

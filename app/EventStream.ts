@@ -2,19 +2,11 @@
  * Created by tom on 16.02.17.
  */
 
-import * as fs from 'fs';
+import {StreamRepo} from "./StreamRepo";
+import {ESEvent, uuid} from "./EventStoreDefs";
+const debug = require('debug')('EventStream');
 
-export function uuid() {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-        var r = Math.random()*16|0, v = c == 'x' ? r : (r&0x3|0x8);
-        return v.toString(16);
-    });
-}
 
-export class ESEvent {
-    constructor(public type : string, public version : number, public aggId : string, public data : Object) {
-    }
-}
 
 class Subscriber {
     constructor(public filter : (event : ESEvent) => boolean,
@@ -25,22 +17,18 @@ export class EventStream {
     private events : ESEvent[] = []
     private subscribers : {[id : string] : Subscriber} = {}
 
-    constructor(public name : string, public uuid : string, aEvents ?: ESEvent[]) {
+    constructor(private persistence : StreamRepo, public name : string, public uuid : string, aEvents ?: ESEvent[]) {
         if (aEvents) {
             this.events = aEvents;
+        } else {
+            this.append(new ESEvent('::Store::Named', this.nextVersion(), null, {name : name}));
         }
     }
 
-    private nextVersion() : number {
-        return this.events.length > 0 ? this.events[this.events.length - 1].version + 1 : 1;
+    public rename(newName : string) {
+        this.name = newName;
+        this.append(new ESEvent('::Store::Named', this.nextVersion(), null, {name : newName}));
     }
-
-    private append(event : ESEvent) {
-        this.events.push(event);
-        const data = JSON.stringify(event);
-        fs.appendFileSync('data/store-'+this.uuid, data + ",", 'utf8');
-    }
-
     private upToDateSubscriber(subscriber : Subscriber) {
         this.events
             .filter(subscriber.filter)
@@ -49,7 +37,7 @@ export class EventStream {
 
     public appendEvent(type : string, aggId : string, data : Object, version = 0) : number {
         // TODO: how do we handle collisions?
-        console.log("appendEvent", type, aggId, version, "\n");
+        debug("appendEvent", type, aggId, version, "\n");
         const esEvent = new ESEvent(type, this.nextVersion(), aggId, data);
         this.append(esEvent);
         for (var key in this.subscribers) {
@@ -57,6 +45,15 @@ export class EventStream {
             if (subscriber.filter(esEvent)) subscriber.callback(esEvent);
         }
         return esEvent.version;
+    }
+
+    private nextVersion() : number {
+        return this.events.length > 0 ? this.events[this.events.length - 1].version + 1 : 1;
+    }
+
+    private append(event : ESEvent) {
+        this.events.push(event);
+        this.persistence.appendToStream(this.uuid, event);
     }
 
     public subscribeForAggregate(callback : (event: ESEvent) => void, aggId : string, fromVersion = 0) : string {
@@ -82,7 +79,6 @@ export class EventStream {
     }
 
     public unsubscribe(id: string) {
-        console.log("unsubscribing", id);
         delete this.subscribers[id];
     }
 
@@ -91,15 +87,6 @@ export class EventStream {
         this.subscribers[subscriberId] = subscriber;
         this.upToDateSubscriber(subscriber);
         return subscriberId;
-    }
-
-    static load(uuid : string, name : string) {
-        console.log("EventStream.load", uuid);
-        let data = "[" + fs.readFileSync('data/store-'+uuid, 'utf8');
-        data = data.substr(0, data.length-1) + "]";
-        console.log(data);
-        const events = JSON.parse(data);
-        return new EventStream(name,  uuid, events);
     }
 }
 

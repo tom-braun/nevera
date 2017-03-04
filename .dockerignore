@@ -1,0 +1,7 @@
+node_modules
+tests
+data
+app/**/*.js.map
+app/**/*.ts
+public/**/*.ts
+public/**/*.js.map

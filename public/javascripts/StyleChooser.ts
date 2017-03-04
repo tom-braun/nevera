@@ -18,9 +18,9 @@ class StyleChooser {
     }
 
     private setSelectedStyle(style : string) {
-        $(this.stylesId + " span").css({ border : 'none'});
+        $(this.stylesId + " span").removeClass("selected-style");
         console.log("targetId: ", style);
-        $("#"+style).css({ border : '2px solid black' });
+        $("#"+style).addClass("selected-style");
         this.selectedStyle = style;
     }
 }
