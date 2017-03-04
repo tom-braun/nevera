@@ -1,4 +1,4 @@
-.idea/workspace.xml
+.idea/
 node_modules
 public/javascripts/*.js
 public/javascripts/*.js.map
