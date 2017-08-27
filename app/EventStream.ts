@@ -35,9 +35,9 @@ export class EventStream {
             .forEach(subscriber.callback);
     }
 
-    public appendEvent(sessionId: string, type : string, aggId : string, data : Object, version = 0) : number {
+    public appendEvent(sessionId: string, type : string, aggId : string, data : Object) : number {
         // TODO: how do we handle collisions?
-        debug("appendEvent", sessionId, type, aggId, version, "\n");
+        debug("appendEvent", sessionId, type, aggId, "\n");
         const esEvent = new ESEvent(sessionId, type, this.nextVersion(), aggId, data);
         this.append(esEvent);
         for (var key in this.subscribers) {

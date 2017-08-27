@@ -54,59 +54,77 @@ class EventBus {
     private listeners = []
     private socket: WebSocket;
     private sessionId: string;
+    private cursor = -1;
 
     public constructor(private url: string) {
+        this.openSocket(url);
+    }
+
+    private openSocket(url: string) {
         this.socket = new WebSocket(url);
         this.socket.onopen = () => {
-            this.socket.send(JSON.stringify({'action': 'subscribeForAll'}));
+            this.socket.send(JSON.stringify({'action': 'subscribeForAll', 'version' : this.cursor}));
         };
         this.socket.onmessage = (msg: MessageEvent) => {
             console.log("EventBus received msg:", msg);
             const storeEvent = JSON.parse(msg.data);
-            if (storeEvent.type === '_sessionInfo') {
-                this.sessionId = storeEvent.sessionId;
-            } else {
-                const fromSelf = storeEvent.sessionId === this.sessionId;
-                this.notifyListeners(fromSelf, storeEvent.type, storeEvent.aggId, storeEvent.version, storeEvent.data);
+            if (storeEvent.version > this.cursor) {
+                if (storeEvent.type === '_sessionInfo') {
+                    console.log("setting session id to "  + storeEvent.sessionId);
+                    this.sessionId = storeEvent.sessionId;
+                } else {
+                    const fromSelf = storeEvent.sessionId === this.sessionId;
+                    this.notifyListeners(fromSelf, storeEvent.type, storeEvent.aggId, storeEvent.version, storeEvent.data);
+                }
+                this.cursor = storeEvent.version;
             }
         };
-        this.socket.onclose = (code) => {
-            console.log("EventBus closed:", code);
+        this.socket.onclose = (event) => {
+            console.log("EventBus closed:", event.code);
+            // see https://developer.mozilla.org/en-US/docs/Web/API/CloseEvent for codes
+            if (event.code == 1006) {
+                // -> abnormal close
+                setTimeout(() => {
+                      this.openSocket(url)
+                    },
+                    1000
+                );
+
+            }
         }
 
         this.socket.onerror = (err: ErrorEvent) => {
             console.log("EventBus error:", err);
         };
     }
-
     public postNoteCreated(aggId: string, noteType: string, x: number, y: number): NoteCreatedEvent {
         let event = new NoteCreatedEvent(aggId, noteType, x, y);
-        this.postEvent(aggId, event, 0);
+        this.postEvent(aggId, event);
         return event
     }
 
 
     public postNoteLabelChanged(aggId: string, newLabel: string) {
         let event = new NoteLabelChangedEvent(aggId, newLabel);
-        this.postEvent(aggId, event, 0);
+        this.postEvent(aggId, event);
     }
 
     public postNoteMoved(aggId: string, x: number, y: number) {
         let event = new NoteMovedEvent(aggId, x, y);
-        this.postEvent(aggId, event, 0);
+        this.postEvent(aggId, event);
     }
 
 
     public postNoteDeleted(aggId: string) {
         let event = new NoteDeletedEvent(aggId);
-        this.postEvent(aggId, event, 0);
+        this.postEvent(aggId, event);
     }
 
     registerListener(aListener: NoteEventListener) {
         this.listeners.push(aListener);
     }
 
-    private postEvent(aggId: string, event: NoteEvent, version: number) {
+    private postEvent(aggId: string, event: NoteEvent) {
         console.log("EventBus postEvent", event);
         this.socket.send(
             JSON.stringify({
@@ -114,8 +132,7 @@ class EventBus {
                 action: 'appendEvent',
                 type: event.type,
                 aggId: aggId,
-                data: event,
-                version: version
+                data: event
             })
         );
     }

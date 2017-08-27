@@ -51,7 +51,7 @@ describe("EventStream", () => {
         describe("when an event is appended", () => {
 
             beforeEach('appendEvent', () => {
-                eventStream.appendEvent("SomeEvent", "agg-id-0", null, 0);
+                eventStream.appendEvent("SomeEvent", null, "agg-id-0", 0);
             })
 
             it('then the event should be send to subscriber 0', () => {
@@ -64,15 +64,18 @@ describe("EventStream", () => {
 
         });
 
-        describe("when three events are appended for an aggregate", () => {
+        describe("when five events are appended", () => {
             beforeEach('appendEvent', () => {
-                eventStream.appendEvent("SomeEvent", "agg-id-0", null, 0);
-                eventStream.appendEvent("SomeEvent", "agg-id-0", null, 1);
-                eventStream.appendEvent("SomeEvent", "agg-id-0", null, 2);
+                eventStream.appendEvent("SomeSession", null, "agg-id-0", 0);
+                eventStream.appendEvent("SomeSession", null, "agg-id-1", 1);
+                eventStream.appendEvent("AnotherSession", null, "agg-id-0", 2);
+                eventStream.appendEvent("SomeSession", null, "agg-id-1", 1);
+                eventStream.appendEvent("AnotherSession", null, "agg-id-0", 2);
             });
 
             it("then each event has an incremented version number", () => {
-                expect(eventsSub0.map((e) => e.version).join(",")).to.equal("2,3,4");
+                expect(eventsSub0.map((e) => e.version).join(",")).to.equal("2,4,6");
+                expect(eventsSub1.map((e) => e.version).join(",")).to.equal("3,5");
             });
         });
 
@@ -108,7 +111,7 @@ describe("EventStream", () => {
         describe("when an event is appended", () => {
 
             beforeEach('appendEvent', () => {
-                eventStream.appendEvent("EventType0", "agg-id-0", null, 0);
+                eventStream.appendEvent("EventType0", "EventType0", "agg-id-0", 0);
             })
 
             it('then the event should be send to subscriber 0', () => {
@@ -131,10 +134,10 @@ describe("EventStream", () => {
             eventsSub1 = [];
 
             console.log("before");
-            eventStream.appendEvent("EventType0", "agg-id-0", null, 0);
-            eventStream.appendEvent("EventType0", "agg-id-1", null, 1);
-            eventStream.appendEvent("EventType1", "agg-id-0", null, 2);
-            eventStream.appendEvent("EventType0", "agg-id-2", null, 3);
+            eventStream.appendEvent("SomeSessionId", "EventType0", "agg-id-0", null, 0);
+            eventStream.appendEvent("SomeSessionId","EventType0", "agg-id-1", null, 1);
+            eventStream.appendEvent("SomeSessionId","EventType1", "agg-id-0", null, 2);
+            eventStream.appendEvent("SomeSessionId","EventType0", "agg-id-2", null, 3);
 
             eventStream.subscribeForAggregate((event: ESEvent) => {
                 eventsSub0.push(event);
@@ -165,7 +168,7 @@ describe("EventStream", () => {
 
     describe("given an empty store", () => {
         it("when appending events the new version will be returned", () => {
-            expect(eventStream.appendEvent("EventType0", "agg-id-0", null)).to.equal(2);
+            expect(eventStream.appendEvent("EventType0", "agg-id-0", null, 0)).to.equal(2);
             expect(eventStream.appendEvent("EventType0", "agg-id-1", null, 1)).to.equal(3);
             expect(eventStream.appendEvent("EventType1", "agg-id-0", null, 2)).to.equal(4);
             expect(eventStream.appendEvent("EventType0", "agg-id-2", null, 3)).to.equal(5);

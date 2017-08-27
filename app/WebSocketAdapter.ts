@@ -15,6 +15,7 @@ class ESCommand {
     public type : string;
     public aggId : string;
     public data : any;
+    /* for subscribe events: only send events with event.version > version. */
     public version : number;
 }
 
@@ -27,10 +28,12 @@ export class WebSocketAdapter {
             console.log("new connection socket:", ws.upgradeReq.url);
             const url = parse(ws.upgradeReq.url, true);
             const stream = this.getStream(eventStore, url);
-            ws.on('close', () => {
+            ws.on('close', (code, msg) => {
+                console.log("socket closed: " + code + " " + msg);
                 subscriberIds.forEach((id) => {
                     stream.unsubscribe(id);
                 })
+
             });
             ws.on('error', (err : Error) => {
                 console.log("error:", err);
@@ -43,14 +46,13 @@ export class WebSocketAdapter {
                     const streamId = eventStore.createStream(event.name);
                     ws.send(JSON.stringify({ streamId: streamId }));
                 } else {
-
                     const stream = this.getStream(eventStore, url);
                     if (command.action === 'appendEvent') {
-                        const version = stream.appendEvent(command.sessionId, command.type, command.aggId, command.data, command.version);
+                        const version = stream.appendEvent(command.sessionId, command.type, command.aggId, command.data);
                     } else if (command.action === 'subscribeForAggregate'){
                         subscriberIds.push(stream.subscribeForAggregate(event => {
                             ws.send(JSON.stringify(event))
-                        }, command.aggId, command.version));
+                        }, command.aggId, command.version+1));
                     } else if (command.action === 'subscribeForAll'){
                         subscriberIds.push(stream.subscribeForType(event => {
                             console.log("subscribeForAll.callback ", event);
@@ -59,7 +61,7 @@ export class WebSocketAdapter {
                             return true;
                         }, () => {
                             return true;
-                        }, command.version));
+                        }, command.version+1));
                     }
                 }
             });
