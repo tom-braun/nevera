@@ -70,6 +70,9 @@ class EventBus {
                 this.notifyListeners(fromSelf, storeEvent.type, storeEvent.aggId, storeEvent.version, storeEvent.data);
             }
         };
+        this.socket.onclose = (code) => {
+            console.log("EventBus closed:", code);
+        }
 
         this.socket.onerror = (err: ErrorEvent) => {
             console.log("EventBus error:", err);

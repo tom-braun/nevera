@@ -70,7 +70,7 @@ export class WebSocketAdapter {
 
     private getStream(eventStore: EventStore, url: Url) {
         console.log("getStream: ", url.path);
-        const streamId : string = url.path.substring(1);
+        const streamId : string = url.path.substring(url.path.lastIndexOf("/")+1);
         console.log("getStream: ", streamId);
         return eventStore.getStream(streamId);
     }
