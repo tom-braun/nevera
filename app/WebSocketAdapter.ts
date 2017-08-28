@@ -9,7 +9,7 @@ import {EventStore} from "./EventStore";
 import {ESEvent, uuid} from "./EventStoreDefs";
 
 
-class ESCommand {
+export class ESCommand {
     public sessionId : string;
     public action : string;
     public type : string;
@@ -48,7 +48,8 @@ export class WebSocketAdapter {
                 } else {
                     const stream = this.getStream(eventStore, url);
                     if (command.action === 'appendEvent') {
-                        const version = stream.appendEvent(command.sessionId, command.type, command.aggId, command.data);
+                        //const version = stream.appendEvent(command.sessionId, command.type, command.aggId, command.data);
+                        console.log("ERROR: this should not be called");
                     } else if (command.action === 'subscribeForAggregate'){
                         subscriberIds.push(stream.subscribeForAggregate(event => {
                             ws.send(JSON.stringify(event))

@@ -1,5 +1,8 @@
+///<reference path="../EventStore.ts"/>
 import {Router, Request, Response, NextFunction} from  'express';
 import {EventStore} from '../EventStore'
+import {isNullOrUndefined} from "util";
+import {ESCommand} from "../WebSocketAdapter";
 
 const debug = require('debug');
 
@@ -38,7 +41,7 @@ export class BoardRouter {
             }
         });
 
-        this.router.put('/boards/:boardId/name/:newName', function (req: Request, res: Response, next: NextFunction) {
+        this.router.put('/boards/:boardId/name/:newName', (req: Request, res: Response, next: NextFunction) => {
             try {
                 console.log("put name ", req.params.newName);
                 eventStore.renameStream(req.params.boardId, req.params.newName);
@@ -46,6 +49,13 @@ export class BoardRouter {
             } catch (e) {
                 res.status(404)
             }
+        });
+
+        this.router.post('/boards/:boardId', (req: Request, res: Response, next: NextFunction) => {
+            // TODO : check for null
+            const stream = eventStore.getStream(req.params.boardId);
+            const command : ESCommand = JSON.parse(req.body);
+            const version = stream.appendEvent(command.sessionId, command.type, command.aggId, command.data);
         });
 
         this.router.post('/boards', (req, res, nextFunction) => {

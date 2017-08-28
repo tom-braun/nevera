@@ -1,4 +1,6 @@
 ///<reference path="../../node_modules/@types/ws/index.d.ts"/>
+import {type} from "os";
+import $ = require("jquery");
 /**
  * Created by tom on 11.02.17.
  */
@@ -50,20 +52,22 @@ interface ConnectionData {
 }
 
 
-class EventBus {
+export class EventBus {
     private listeners = []
     private socket: WebSocket;
     private sessionId: string;
     private cursor = -1;
+    private outQueue = []
 
-    public constructor(private url: string) {
-        this.openSocket(url);
+    public constructor(private wsUrl: string, private apiUrl: string) {
+        this.openSocket(wsUrl);
     }
 
     private openSocket(url: string) {
         this.socket = new WebSocket(url);
         this.socket.onopen = () => {
             this.socket.send(JSON.stringify({'action': 'subscribeForAll', 'version' : this.cursor}));
+            this.sendPendingEvents(this.outQueue);
         };
         this.socket.onmessage = (msg: MessageEvent) => {
             console.log("EventBus received msg:", msg);
@@ -126,15 +130,37 @@ class EventBus {
 
     private postEvent(aggId: string, event: NoteEvent) {
         console.log("EventBus postEvent", event);
-        this.socket.send(
-            JSON.stringify({
-                sessionId: this.sessionId,
-                action: 'appendEvent',
-                type: event.type,
-                aggId: aggId,
-                data: event
+        this.outQueue.push(JSON.stringify({
+            sessionId: this.sessionId,
+            action: 'appendEvent',
+            type: event.type,
+            aggId: aggId,
+            data: event
+        }));
+        this.sendPendingEvents(this.outQueue);
+    }
+
+    private sendPendingEvents(queue : string[]) {
+        console.log("sendPendingEvents()", queue.length);
+        if (queue.length > 0) {
+
+            console.log("WILL Send")
+
+            $.ajax({
+                url: this.apiUrl,
+                type: "POST",
+                contentType: "json",
+                data: queue[0]
             })
-        );
+                .fail((jqXHR, textStatus) => {
+                    console.log("Error sending: ", textStatus)
+                })
+                .done(() => {
+                    console.log("SENT")
+                    queue.pop();
+                    this.sendPendingEvents(queue);
+                });
+        }
     }
 
     private notifyListeners(fromSelf: boolean, type: string, aggId: string, version: number, event: NoteEvent) {
@@ -144,3 +170,5 @@ class EventBus {
     }
 
 }
+
+export default EventBus;

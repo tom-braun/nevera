@@ -37,7 +37,9 @@ html
         script().
             const styleChooser = new StyleChooser("#styles")
             const wsProto = location.protocol === 'http:' ? "ws" : "wss"
-            const eventBus = new EventBus(wsProto + "://" + location.host + "/ws/" + "#{boardId}");
+            const wsUrl = wsProto + "://" + location.host + "/ws/" + "#{boardId}";
+            const apiUrl = location.protocol + "//board/#{boardId}"
+            const eventBus = new EventBus(wsUrl, apiUrl);
 
             new ESBoard("#canvas", eventBus, styleChooser);
 
