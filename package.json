@@ -9,17 +9,17 @@
     "test": "mocha -r ts-node/register app/**/*Test.ts"
   },
   "dependencies": {
-    "body-parser": "~1.16.0",
-    "cookie-parser": "~1.4.3",
-    "debug": "~2.6.0",
+    "body-parser": "^1.16.1",
+    "cookie-parser": "^1.4.3",
+    "debug": "^2.6.8",
     "errorhandler": "^1.5.0",
-    "express": "~4.14.1",
-    "mocha": "^3.2.0",
-    "morgan": "~1.7.0",
-    "pug": "~2.0.0-beta11",
-    "serve-favicon": "~2.3.2",
-    "uuid": "^3.0.1",
-    "ws": "~2.0.3"
+    "express": "^4.14.1",
+    "mocha": "^3.5.0",
+    "morgan": "^1.7.0",
+    "pug": "^2.0.0-rc.3",
+    "serve-favicon": "^2.3.2",
+    "uuid": "^3.1.0",
+    "ws": "^2.0.3"
   },
   "devDependencies": {
     "@types/chai": "^3.4.34",
@@ -34,7 +34,9 @@
     "@types/ws": "~0.0.38",
     "chai": "^3.5.0",
     "sinon": "^1.17.7",
+    "ts-loader": "^2.3.4",
     "ts-node": "^2.1.0",
-    "typescript": "^2.2.1"
+    "typescript": "^2.6.0-dev.20170826",
+    "typings": "^2.1.1"
   }
 }

@@ -1,6 +1,7 @@
 ///<reference path="../../node_modules/@types/ws/index.d.ts"/>
-import {type} from "os";
-import $ = require("jquery");
+///<reference path="../../node_modules/@types/jquery/index.d.ts"/>
+
+
 /**
  * Created by tom on 11.02.17.
  */
@@ -13,12 +14,18 @@ class EventType {
 }
 interface NoteEvent {
     type;
+
+    stringify() : string;
 }
 
 class NoteCreatedEvent implements NoteEvent {
     readonly type = EventType.noteCreated;
 
     constructor(public aggId: string, public noteType: string, public x: number, public y: number) {
+    }
+
+    stringify() : string {
+        return JSON.stringify(this)
     }
 }
 
@@ -27,6 +34,10 @@ class NoteLabelChangedEvent implements NoteEvent {
 
     constructor(public aggId: string, public newLabel: string) {
     }
+
+    stringify() : string {
+        return JSON.stringify(this)
+    }
 }
 
 class NoteMovedEvent implements NoteEvent {
@@ -34,12 +45,20 @@ class NoteMovedEvent implements NoteEvent {
 
     constructor(public aggId: string, public x: number, public y: number) {
     }
+
+    stringify() : string {
+        return JSON.stringify(this)
+    }
 }
 
 class NoteDeletedEvent implements NoteEvent {
     readonly type = EventType.noteDeleted;
 
     constructor(public aggId: string) {
+    }
+
+    stringify() : string {
+        return JSON.stringify(this)
     }
 }
 
@@ -52,7 +71,7 @@ interface ConnectionData {
 }
 
 
-export class EventBus {
+class EventBus {
     private listeners = []
     private socket: WebSocket;
     private sessionId: string;
@@ -130,33 +149,28 @@ export class EventBus {
 
     private postEvent(aggId: string, event: NoteEvent) {
         console.log("EventBus postEvent", event);
-        this.outQueue.push(JSON.stringify({
+        this.outQueue.push({
             sessionId: this.sessionId,
             action: 'appendEvent',
             type: event.type,
             aggId: aggId,
             data: event
-        }));
+        });
         this.sendPendingEvents(this.outQueue);
     }
 
     private sendPendingEvents(queue : string[]) {
         console.log("sendPendingEvents()", queue.length);
         if (queue.length > 0) {
-
-            console.log("WILL Send")
-
-            $.ajax({
+            $.post({
                 url: this.apiUrl,
-                type: "POST",
-                contentType: "json",
-                data: queue[0]
+                data: JSON.stringify(queue[0])
             })
                 .fail((jqXHR, textStatus) => {
                     console.log("Error sending: ", textStatus)
                 })
                 .done(() => {
-                    console.log("SENT")
+                    console.log("SENT");
                     queue.pop();
                     this.sendPendingEvents(queue);
                 });
@@ -170,5 +184,3 @@ export class EventBus {
     }
 
 }
-
-export default EventBus;

@@ -1,7 +1,8 @@
 ///<reference path="EventBus.ts"/>
 ///<reference path="StyleChooser.ts"/>
 ///<reference path="../../node_modules/@types/jquery/index.d.ts"/>
-///<reference path="../../node_modules/@types/jqueryui/index.d.ts"/>
+
+
 /**
  * Created by tom on 11.02.17.
  */
